@@ -99,28 +99,18 @@ workflow annotate_and_filter {
 			caf_file = estimate_cohort_AF.out
 	}
 
-	#run outlier filter
-	## NOTE: REQUIRES CLEAN DE NOVOS TO ACCURATELY IDENTIFY OUTLIERS
-	call annotation.flag_outlier as outlier1 {
-		input:
-			infile = flag_CAF.out,
-			cohort_size = cohort_size,
-			exp = expected_dnsnvs,
-			cutoff = case_cutoff
-	}
-
 	#########################################################
 	## parse filter flags, summarize filtering, output variants passing all filters
 	#########################################################
 	#run update_filter_column script to combine filter flags into single column
 	call annotation.update_filt_col as update1 {
 		input:
-			infile = outlier1.out
+			infile = flag_CAF.out
 	}
 
 	#run outlier filter
 	## NOTE: REQUIRES CLEAN DE NOVOS TO ACCURATELY IDENTIFY OUTLIERS
-	call annotation.flag_outlier as outlier2 {
+	call annotation.flag_outlier {
 		input:
 			infile = update1.outfile,
 			cohort_size = cohort_size,
@@ -131,7 +121,7 @@ workflow annotate_and_filter {
 	# 2nd run to update filter column with outlier flag information
 	call annotation.update_filt_col as update2 {
 		input:
-			infile = outlier2.out
+			infile = flag_outlier.out
 	}
 
 	#run script to summarize counts of variants flagged by each filter
